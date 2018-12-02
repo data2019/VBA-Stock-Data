@@ -1,0 +1,140 @@
+'Create a script that will loop through all the stocks and take the following info:
+
+'Yearly change from what the stock opened the year at to what the closing price was.
+'The percent change from the what it opened the year at to what it closed.
+'The total Volume of the stock
+'Ticker symbol
+
+Sub stockData()
+   
+   'Declearing variables to store data
+   
+    Dim Ticker_Name As String
+    Dim Volume_Total As Double
+    Dim open_stock As Double
+    Dim close_stock As Double
+    Dim yearly_change As Double
+    Dim percent_change As Double
+
+'Loop for each worksheet
+For Each ws In Worksheets
+
+'Initialize variables to zero
+        Volume_Total = 0
+        open_stock = 0
+        close_stock = 0
+        yearly_change = 0
+        percent_change = 0
+        
+        'Declearing varialbe for summary table
+        Dim Summary_Table_Row As Integer
+        Summary_Table_Row = 2
+        
+        ' Determine the Last Row
+        LastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        
+        'Loop to calculate total volume, yearly change, percentage change for each ticker
+        For i = 2 To LastRow
+    
+             If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+                 Ticker_Name = ws.Cells(i, 1).Value
+    
+            Volume_Total = Volume_Total + ws.Cells(i, 7).Value
+            
+            open_stock = open_stock + ws.Cells(i, 3).Value
+            close_stock = close_stock + ws.Cells(i, 6).Value
+            yearly_change = close_stock - open_stock
+            percent_change = yearly_change / open_stock
+    
+            ws.Range("I" & Summary_Table_Row).Value = Ticker_Name
+            ws.Range("J" & Summary_Table_Row).Value = yearly_change
+            ws.Range("K" & Summary_Table_Row).Value = Format(percent_change, "Percent")
+            ws.Range("L" & Summary_Table_Row).Value = Volume_Total
+
+            Summary_Table_Row = Summary_Table_Row + 1
+
+            Volume_Total = 0
+            open_stock = 0
+            close_stock = 0
+            yearly_change = 0
+            percent_change = 0
+     
+      Else
+
+            Volume_Total = Volume_Total + ws.Cells(i, 7).Value
+            open_stock = open_stock + ws.Cells(i, 3).Value
+            close_stock = close_stock + ws.Cells(i, 6).Value
+    
+    End If
+        
+    Next i
+    
+    'Summary table column headers
+    ws.Cells(1, 9) = "Ticker"
+    ws.Cells(1, 10) = "Yearly Change"
+    ws.Cells(1, 11) = "Percentage Change"
+    ws.Cells(1, 12) = "Total Stock Volume"
+    ws.Cells(1, 15) = "Ticker"
+    ws.Cells(1, 16) = "Value"
+    ws.Cells(2, 14) = "Greatest % Increase"
+    ws.Cells(3, 14) = "Greatest % Decrease"
+    ws.Cells(4, 14) = "Greatest Total Volume"
+   
+    ' --------------------------------------------
+    
+    'Declearing varialbes for Max volume, max increase and mac decrease
+    Dim max_Volume As Double
+    Dim max_increase As Double
+    Dim min_decrease As Double
+
+       'calcualte last row in summary table
+        sumLastRow = ws.Cells(Rows.Count, 9).End(xlUp).Row
+        max_Volume = WorksheetFunction.Max(ws.Range("L2:L" & sumLastRow))
+        max_increase = WorksheetFunction.Max(ws.Range("K2:K" & sumLastRow))
+        min_decrease = WorksheetFunction.Min(ws.Range("K2:K" & sumLastRow))
+
+        ws.Cells(2, 16) = Format(max_increase, "Percent")
+        ws.Cells(3, 16) = Format(min_decrease, "Percent")
+        ws.Cells(4, 16) = max_Volume
+        
+        'Loop for Max volume ticker
+         For i = 2 To sumLastRow
+            If ws.Cells(i, 12).Value = max_Volume Then
+                  ws.Cells(4, 15) = ws.Cells(i, 9).Value
+         End If
+         Next i
+                  
+        'Loop for Max increase ticker
+        For i = 2 To sumLastRow
+             If ws.Cells(i, 11).Value = max_increase Then
+               ws.Cells(2, 15) = ws.Cells(i, 9).Value
+            End If
+        Next i
+         
+          'Loop for Min decrease ticker
+         For i = 2 To sumLastRow
+             If ws.Cells(i, 11).Value = min_decrease Then
+                 ws.Cells(3, 15) = ws.Cells(i, 9).Value
+                  
+         End If
+         Next i
+         
+         'Loop for conditional color for yearly change
+         For i = 2 To sumLastRow
+               If ws.Cells(i, 10).Value > 0 Then
+                        ws.Cells(i, 10).Interior.ColorIndex = 4
+               Else
+                      ws.Cells(i, 10).Interior.ColorIndex = 3
+                      
+          End If
+         Next i
+     
+        
+    Next ws
+
+    MsgBox ("Fixes Complete")
+End Sub
+
+
+
+
